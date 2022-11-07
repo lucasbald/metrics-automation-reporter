@@ -11,7 +11,14 @@
         "ecmaVersion": "latest"
     },
     "rules": {
-		"indent": [2, "tab", { "SwitchCase": 1, "VariableDeclarator": 1 }],
+        "indent": [
+            2,
+            "tab",
+            {
+                "SwitchCase": 1,
+                "VariableDeclarator": 1
+            }
+        ],
         "no-tabs": 0
     }
 }
