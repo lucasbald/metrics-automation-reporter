@@ -1,3 +1,4 @@
+const { GoogleSpreadsheet } = require('google-spreadsheet');
 const { executeSearch, handleResponse } = require('../handlers/jira');
 
 const STORY_POINTS_ERROR_MSG = 'There is no story points set in any of the Stories';
@@ -47,6 +48,29 @@ const getSprintBacklog = async (sprint, totalSpentHoursBugs) => {
 	response.productivity = storyPoints ? (aggregateTimeSpent / storyPoints) : STORY_POINTS_ERROR_MSG;
 
 	return response;
+};
+
+/*
+	TODO: understand what we will have to put on the sheet DB
+	because it is not the same values that we have as the base spreadsheet that we are referring to
+*/
+const updateDBWithStoryDetails = async ({
+	sprint,
+	bugsData,
+	sprintIndicators,
+}) => {
+	const sprintSheetName = `Sprint-${sprint}`;
+	try {
+		const spreadSheet = new GoogleSpreadsheet(process.env.GOOGLE_SHEET_ID);
+		await spreadSheet.useServiceAccountAuth({
+			client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+			private_key: process.env.GOOGLE_PRIVATE_KEY,
+		});
+		await spreadSheet.loadInfo();
+		const newSheet = await spreadSheet.addSheet({ title: sprintSheetName });
+	} catch (error) {
+		console.log(error);
+	}
 };
 
 module.exports = {
