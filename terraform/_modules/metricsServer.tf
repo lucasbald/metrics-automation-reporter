@@ -1,5 +1,5 @@
 provider "aws" {
-  region  = var.region
+  region = var.region
 }
 
 data "template_file" "metricsServer-initialization" {
@@ -9,12 +9,12 @@ data "template_file" "metricsServer-initialization" {
 resource "aws_instance" "metricsServer" {
   ami           = var.ami
   instance_type = var.instance_type
-  subnet_id = var.public_subnet
+  subnet_id     = var.public_subnet
   security_groups = [
   aws_security_group.metricsServer-security-group.id]
   associate_public_ip_address = true
   iam_instance_profile        = aws_iam_instance_profile.metricsServer-instance-profile.name
-  user_data = data.template_file.metricsServer-initialization.rendered
+  user_data                   = data.template_file.metricsServer-initialization.rendered
 }
 
 resource "aws_eip" "metricsServer-public-ip" {

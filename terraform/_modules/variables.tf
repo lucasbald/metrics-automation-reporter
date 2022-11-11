@@ -19,15 +19,15 @@ variable "vpc_id" {
 }
 
 variable "public_subnet" {
-  type    = string
+  type = string
 }
 
 variable "private_subnet" {
-  type    = string
+  type = string
 }
 
 variable "hosted_zone_id" {
-  type    = string
+  type = string
 }
 
 variable "dns" {
