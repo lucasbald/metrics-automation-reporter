@@ -1,19 +1,33 @@
 const axios = require('axios');
+const { log } = require('../utils/logger');
+const { getCredentialsKeys } = require('../utils/credentials');
+const { getSsmParameters } = require('../utils/ssm');
 
 const STORY_POINTS_CUSTOM_FIELD = 'customfield_14601';
 const DEVELOPMENT_PHASE_CUSTOM_FIELD = 'customfield_14280';
 
 const executeSearch = async ({ filter }) => {
+	const keysToSearch = getCredentialsKeys({ toolName: 'jira' });
+	const { url, basicAuth } = await getSsmParameters({ parameters: keysToSearch });
+
 	const options = {
-		baseURL: process.env.JIRA_BASE_URL,
+		baseURL: url,
 		url: encodeURI(`search?${filter}`),
 		method: 'GET',
 		headers: {
-			Authorization: process.env.JIRA_AUTHENTICATION,
+			Authorization: basicAuth,
 		},
 	};
-	const { data } = await axios.request(options);
-	return data;
+
+	let data;
+	try {
+		({ data } = await axios.request(options));
+
+		return data;
+	} catch (error) {
+		log(error);
+		throw Error(error);
+	}
 };
 
 const handleResponse = (issues) => issues.map((i) => ({
