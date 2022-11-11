@@ -23,8 +23,7 @@ RUN htpasswd -b -c /etc/nginx/.htpasswd ${NGINX_USER} ${NGINX_PASSWORD}
 RUN certbot certonly \
 -n --agree-tos --email "${CERTBOT_EMAIL}" \
 --dns-route53 -d "${CERTBOT_URLS}" \
---work-dir=auto-generation --logs-dir=auto-generation --config-dir=auto-generation \
---staging
+--work-dir=auto-generation --logs-dir=auto-generation --config-dir=auto-generation
 
 RUN cp /opt/certbot/auto-generation/live/${CERTBOT_URLS}/fullchain.pem /etc/ssl/certs/fullchain1.pem
 RUN cp /opt/certbot/auto-generation/live/${CERTBOT_URLS}/privkey.pem /etc/ssl/private/privkey1.pem
