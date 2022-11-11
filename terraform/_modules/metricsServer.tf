@@ -1,6 +1,5 @@
 provider "aws" {
   region  = var.region
-  profile = "<TODO / README: YOUR_ACCOUNT_PROFILE_NAME>"
 }
 
 data "template_file" "metricsServer-initialization" {
@@ -29,7 +28,7 @@ resource "aws_eip" "metricsServer-public-ip" {
 
 resource "aws_route53_record" "metricsServer-dns" {
   zone_id = var.hosted_zone_id
-  name    = "<YOUR_DNS>" // TODO, include on variables
+  name    = var.dns
   type    = "A"
   ttl     = "300"
   records = [aws_eip.metricsServer-public-ip.public_ip]
