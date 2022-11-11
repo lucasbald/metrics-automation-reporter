@@ -5,3 +5,17 @@ services:
     ports:
       - '3000:3000'
     restart: always
+  nginx:
+    build:
+      context: nginx
+      args:
+      - CERTBOT_URLS=your.url.goes.here.com
+      - CERTBOT_EMAIL=your@email.com
+      - NGINX_USER=youruser
+      - NGINX_PASSWORD=yourpassword
+    ports:
+    - '80:80'
+    - '443:443'
+    restart: always
+    links:
+      - 'web:web.net'
