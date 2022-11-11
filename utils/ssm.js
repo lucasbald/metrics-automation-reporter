@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 const aws = require('aws-sdk');
 const { log } = require('./logger');
 
