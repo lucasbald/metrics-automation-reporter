@@ -1,13 +1,12 @@
 const axios = require('axios');
 const { log } = require('../utils/logger');
-const { getCredentialsKeys } = require('../utils/credentials');
+const { jira: keysToSearch } = require('../utils/credentials');
 const { getSsmParameters } = require('../utils/ssm');
 
 const STORY_POINTS_CUSTOM_FIELD = 'customfield_14601';
 const DEVELOPMENT_PHASE_CUSTOM_FIELD = 'customfield_14280';
 
 const executeSearch = async ({ filter }) => {
-	const keysToSearch = getCredentialsKeys({ toolName: 'jira' });
 	const { url, basicAuth } = await getSsmParameters({ parameters: keysToSearch });
 
 	const options = {
