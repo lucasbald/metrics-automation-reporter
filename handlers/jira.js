@@ -7,7 +7,7 @@ const STORY_POINTS_CUSTOM_FIELD = 'customfield_14601';
 const DEVELOPMENT_PHASE_CUSTOM_FIELD = 'customfield_14280';
 
 const executeSearch = async ({ filter }) => {
-	const { url, basicAuth } = await getSsmParameters({ parameters: keysToSearch });
+	const { url, basicAuth } = await getSsmParameters({ parameters: keysToSearch, toolName: 'jira' });
 
 	const options = {
 		baseURL: url,
