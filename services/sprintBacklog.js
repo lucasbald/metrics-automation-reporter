@@ -1,5 +1,8 @@
 const { GoogleSpreadsheet } = require('google-spreadsheet');
 const { executeSearch, handleResponse } = require('../handlers/jira');
+const { log } = require('../utils/logger');
+const { getSsmParameters } = require('../utils/ssm');
+const { googleSheet: keysToSearch } = require('../utils/credentials');
 
 const STORY_POINTS_ERROR_MSG = 'There is no story points set in any of the Stories';
 
@@ -105,12 +108,14 @@ const updateDBWithStoryDetails = async ({
 	bugsData,
 	sprintIndicators,
 }) => {
+	const { id, accountEmail, privateKey } = await getSsmParameters({ parameters: keysToSearch, toolName: 'googleSheet' });
+
 	try {
 		const { bugs } = bugsData;
-		const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEET_ID);
+		const doc = new GoogleSpreadsheet(id);
 		await doc.useServiceAccountAuth({
-			client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-			private_key: process.env.GOOGLE_PRIVATE_KEY,
+			client_email: accountEmail,
+			private_key: privateKey,
 		});
 		await doc.loadInfo();
 		const sheetBugs = doc.sheetsByTitle['Sprint Bugs'];
@@ -125,9 +130,8 @@ const updateDBWithStoryDetails = async ({
 		// eslint-disable-next-line max-len
 		await sheetMetrics.addRow(treatKeyToAddOnSheet(createSprintMetricsObj(bugsData, sprintIndicators)));
 	} catch (error) {
-		// eslint-disable-next-line no-console
-		console.log('Error on updateDBWithStoryDetails: ', error);
-		throw (new Error('Error on updateDBWithStoryDetails'));
+		log(error);
+		throw Error(error);
 	}
 
 	return true;
