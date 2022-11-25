@@ -29,6 +29,7 @@
     "lint"
   ],
   "dependencies": {
+    "aws-sdk": "^2.1252.0",
     "axios": "^1.1.3",
     "express": "^4.18.2"
   },
