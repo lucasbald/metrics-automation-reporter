@@ -1,24 +1,31 @@
 const axios = require('axios');
+const { log } = require('../utils/logger');
+const { jira: keysToSearch } = require('../utils/credentials');
+const { getSsmParameters } = require('../utils/ssm');
 
 const STORY_POINTS_CUSTOM_FIELD = 'customfield_14601';
 const DEVELOPMENT_PHASE_CUSTOM_FIELD = 'customfield_14280';
 
 const executeSearch = async ({ filter }) => {
+	const { url, basicAuth } = await getSsmParameters({ parameters: keysToSearch, toolName: 'jira' });
+
 	const options = {
-		baseURL: process.env.JIRA_BASE_URL,
+		baseURL: url,
 		url: encodeURI(`search?${filter}`),
 		method: 'GET',
 		headers: {
-			Authorization: process.env.JIRA_AUTHENTICATION,
+			Authorization: basicAuth,
 		},
 	};
+
+	let data;
 	try {
-		const { data } = await axios.request(options);
+		({ data } = await axios.request(options));
+
 		return data;
 	} catch (error) {
-		// eslint-disable-next-line no-console
-		console.log(`Error on executeSearch with filter ${filter}: `, error);
-		throw (new Error('Error on executeSearch'));
+		log(error);
+		throw Error(error);
 	}
 };
 

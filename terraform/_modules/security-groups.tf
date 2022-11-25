@@ -6,14 +6,14 @@ resource "aws_security_group" "metricsServer-security-group" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = split("\n", file("<PATH_TO_ALLOWED_IPS>")) // TODO, include allowed IPs
+    cidr_blocks = split("\n", file("ip-allow-list"))
   }
 
   ingress {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = split("\n", file("<PATH_TO_ALLOWED_IPS>")) // TODO, include allowed IPs
+    cidr_blocks = split("\n", file("ip-allow-list"))
   }
 
   egress {
