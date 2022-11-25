@@ -50,40 +50,32 @@ const getSprintBacklog = async (sprint, totalSpentHoursBugs) => {
 	return response;
 };
 
-/*
-	TODO: understand what we will have to put on the sheet DB
-	because it is not the same values that we have as the base spreadsheet that we are referring to
-*/
-const updateDBWithStoryDetails = async ({
-	bugsData,
-	sprintIndicators,
-}) => {
-	try {
-		const { bugs } = bugsData
-		const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEET_ID);
-		await doc.useServiceAccountAuth({
-			client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-			private_key: process.env.GOOGLE_PRIVATE_KEY,
-		});
-		await doc.loadInfo();
-		const sheetBugs = doc.sheetsByTitle['Sprint Bugs']
-		const sheetMetrics = doc.sheetsByTitle['Sprint Metrics']
-
-		for (const element of bugs) {
-			await sheetBugs.addRow(element)
-		}
-
-		await sheetMetrics.addRow(createSprintMetricsObj(bugsData, sprintIndicators))
-
-		return true
-	} catch (error) {
-		console.log(error);
-	}
+const stringToTitleCase = (text) => {
+	const treatedString = text.replace(/([A-Z])/g, ' $1');
+	return treatedString.charAt(0).toUpperCase() + treatedString.slice(1);
 };
 
-const roundNumbers = (num) => {
-	return (typeof num) === 'number' ? Math.round((num + Number.EPSILON) * 100) / 100 : num
-}
+const treatKeyToAddOnSheet = (objToSheet) => {
+	const objWithTitleCaseKeys = {};
+	// keyCamelCase to Key Camel Case
+	Object.keys(objToSheet).forEach((key) => {
+		if (key === 'QA' || key === 'UAT' || key === 'PROD') objWithTitleCaseKeys[key] = objToSheet[key];
+		else objWithTitleCaseKeys[stringToTitleCase(key)] = objToSheet[key];
+	});
+	return objWithTitleCaseKeys;
+};
+
+const roundNumbers = (num) => ((typeof num) === 'number' ? Math.round((num + Number.EPSILON) * 100) / 100 : num);
+
+const envBugDetailsToString = (env) => {
+	if (!env) return '';
+	const {
+		qty,
+		sumTimeSpent,
+		qtyCanceled,
+	} = env;
+	return `${qty} bugs with ${roundNumbers(sumTimeSpent)} time spent and ${qtyCanceled} cancelled`;
+};
 
 const createSprintMetricsObj = (bugsData, sprintIndicators) => {
 	const {
@@ -91,28 +83,57 @@ const createSprintMetricsObj = (bugsData, sprintIndicators) => {
 		PROD,
 		UAT,
 		QA,
-		totalSpentBugs
-	} = bugsData
-	Object.keys(sprintIndicators).forEach((key) => sprintIndicators[key] = roundNumbers(sprintIndicators[key]))
+		totalSpentBugs,
+	} = bugsData;
+
+	Object.keys(sprintIndicators).forEach((key) => {
+		// eslint-disable-next-line no-param-reassign
+		sprintIndicators[key] = roundNumbers(sprintIndicators[key]);
+	});
+
 	return {
 		totalBugsAmount: total,
 		PROD: envBugDetailsToString(PROD),
 		UAT: envBugDetailsToString(UAT),
 		QA: envBugDetailsToString(QA),
 		totalSpentBugs: roundNumbers(totalSpentBugs),
-		...sprintIndicators
-	}
-}
+		...sprintIndicators,
+	};
+};
 
-const envBugDetailsToString = ({
-	qty,
-	sumTimeSpent,
-	qtyCanceled
+const updateDBWithStoryDetails = async ({
+	bugsData,
+	sprintIndicators,
 }) => {
-	return `${qty} bugs with ${roundNumbers(sumTimeSpent)} time spent and ${qtyCanceled} cancelled`
-}
+	try {
+		const { bugs } = bugsData;
+		const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEET_ID);
+		await doc.useServiceAccountAuth({
+			client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+			private_key: process.env.GOOGLE_PRIVATE_KEY,
+		});
+		await doc.loadInfo();
+		const sheetBugs = doc.sheetsByTitle['Sprint Bugs'];
+		const sheetMetrics = doc.sheetsByTitle['Sprint Metrics'];
+
+		// eslint-disable-next-line no-restricted-syntax
+		for (const element of bugs) {
+			// eslint-disable-next-line no-await-in-loop
+			await sheetBugs.addRow(treatKeyToAddOnSheet(element));
+		}
+
+		// eslint-disable-next-line max-len
+		await sheetMetrics.addRow(treatKeyToAddOnSheet(createSprintMetricsObj(bugsData, sprintIndicators)));
+	} catch (error) {
+		// eslint-disable-next-line no-console
+		console.log('Error on updateDBWithStoryDetails: ', error);
+		throw (new Error('Error on updateDBWithStoryDetails'));
+	}
+
+	return true;
+};
 
 module.exports = {
 	getSprintBacklog,
-	updateDBWithStoryDetails
+	updateDBWithStoryDetails,
 };

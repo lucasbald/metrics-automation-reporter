@@ -1,7 +1,7 @@
 const express = require('express');
 const { log } = require('../utils/logger');
 const { getBugs } = require('../services/bugs');
-const { getSprintBacklog } = require('../services/sprintBacklog');
+const { getSprintBacklog, updateDBWithStoryDetails } = require('../services/sprintBacklog');
 
 const router = express.Router();
 
@@ -23,8 +23,8 @@ router.get('/', async (req, res) => {
 
 	await updateDBWithStoryDetails({
 		bugsData,
-		sprintIndicators
-	})
+		sprintIndicators,
+	});
 
 	res.status(200).json(result);
 });

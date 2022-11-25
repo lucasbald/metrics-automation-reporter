@@ -16,7 +16,9 @@ const executeSearch = async ({ filter }) => {
 		const { data } = await axios.request(options);
 		return data;
 	} catch (error) {
-		console.log(`Error on executeSearch with filter ${filter}: `, error)
+		// eslint-disable-next-line no-console
+		console.log(`Error on executeSearch with filter ${filter}: `, error);
+		throw (new Error('Error on executeSearch'));
 	}
 };
 
