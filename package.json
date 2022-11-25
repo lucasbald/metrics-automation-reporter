@@ -31,7 +31,8 @@
   "dependencies": {
     "aws-sdk": "^2.1252.0",
     "axios": "^1.1.3",
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "google-spreadsheet": "^3.3.0"
   },
   "devDependencies": {
     "eslint": "^8.26.0",
