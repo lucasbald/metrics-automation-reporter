@@ -21,6 +21,11 @@ router.get('/', async (req, res) => {
 		sprintIndicators,
 	};
 
+	await updateDBWithStoryDetails({
+		bugsData,
+		sprintIndicators
+	})
+
 	res.status(200).json(result);
 });
 

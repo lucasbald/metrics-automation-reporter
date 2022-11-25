@@ -12,8 +12,12 @@ const executeSearch = async ({ filter }) => {
 			Authorization: process.env.JIRA_AUTHENTICATION,
 		},
 	};
-	const { data } = await axios.request(options);
-	return data;
+	try {
+		const { data } = await axios.request(options);
+		return data;
+	} catch (error) {
+		console.log(`Error on executeSearch with filter ${filter}: `, error)
+	}
 };
 
 const handleResponse = (issues) => issues.map((i) => ({

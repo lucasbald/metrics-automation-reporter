@@ -55,24 +55,64 @@ const getSprintBacklog = async (sprint, totalSpentHoursBugs) => {
 	because it is not the same values that we have as the base spreadsheet that we are referring to
 */
 const updateDBWithStoryDetails = async ({
-	sprint,
 	bugsData,
 	sprintIndicators,
 }) => {
-	const sprintSheetName = `Sprint-${sprint}`;
 	try {
-		const spreadSheet = new GoogleSpreadsheet(process.env.GOOGLE_SHEET_ID);
-		await spreadSheet.useServiceAccountAuth({
+		const { bugs } = bugsData
+		const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEET_ID);
+		await doc.useServiceAccountAuth({
 			client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
 			private_key: process.env.GOOGLE_PRIVATE_KEY,
 		});
-		await spreadSheet.loadInfo();
-		const newSheet = await spreadSheet.addSheet({ title: sprintSheetName });
+		await doc.loadInfo();
+		const sheetBugs = doc.sheetsByTitle['Sprint Bugs']
+		const sheetMetrics = doc.sheetsByTitle['Sprint Metrics']
+
+		for (const element of bugs) {
+			await sheetBugs.addRow(element)
+		}
+
+		await sheetMetrics.addRow(createSprintMetricsObj(bugsData, sprintIndicators))
+
+		return true
 	} catch (error) {
 		console.log(error);
 	}
 };
 
+const roundNumbers = (num) => {
+	return (typeof num) === 'number' ? Math.round((num + Number.EPSILON) * 100) / 100 : num
+}
+
+const createSprintMetricsObj = (bugsData, sprintIndicators) => {
+	const {
+		total,
+		PROD,
+		UAT,
+		QA,
+		totalSpentBugs
+	} = bugsData
+	Object.keys(sprintIndicators).forEach((key) => sprintIndicators[key] = roundNumbers(sprintIndicators[key]))
+	return {
+		totalBugsAmount: total,
+		PROD: envBugDetailsToString(PROD),
+		UAT: envBugDetailsToString(UAT),
+		QA: envBugDetailsToString(QA),
+		totalSpentBugs: roundNumbers(totalSpentBugs),
+		...sprintIndicators
+	}
+}
+
+const envBugDetailsToString = ({
+	qty,
+	sumTimeSpent,
+	qtyCanceled
+}) => {
+	return `${qty} bugs with ${roundNumbers(sumTimeSpent)} time spent and ${qtyCanceled} cancelled`
+}
+
 module.exports = {
 	getSprintBacklog,
+	updateDBWithStoryDetails
 };
